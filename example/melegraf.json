@@ -1,0 +1,39 @@
+{
+    "processors": [
+        {
+            "name": "cpu_usage_collector",
+            "type": "cpu_usage_collector",
+            "interval": "1s"
+        },
+        {
+            "name": "hostname_modifier",
+            "type": "tag_modifier",
+            "interval": "1s",
+            "add_tags": [
+                {"hostname": "localhost"}
+            ]
+        },
+        {
+            "name": "file_output",
+            "type": "file_writer",
+            "interval": "1s",
+            "path": "cpu_usage.txt",
+            "format": "json",
+            "mode": "append"
+        }
+    ],
+    "conveyors": [
+        {
+            "name": "cpu2host",
+            "size": 10,
+            "input": "cpu_usage_collector",
+            "output": "hostname_modifier"
+        },
+        {
+            "name": "host2file",
+            "size": 10,
+            "input": "hostname_modifier",
+            "output": "file_output"
+        }
+    ]
+}
