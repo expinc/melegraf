@@ -26,8 +26,8 @@ func (config *ProcessorConfigBase) ValidateBase() error {
 		return errors.New("type is required")
 	}
 
-	if _, err := globals.CronParser.Parse(strings.TrimSpace(config.CronSpec)); err == nil {
-		return errors.New("cronSpec is not valid")
+	if _, err := globals.CronParser.Parse(strings.TrimSpace(config.CronSpec)); err != nil {
+		return err
 	}
 
 	return nil

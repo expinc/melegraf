@@ -3,12 +3,12 @@
         {
             "name": "cpu_usage_collector",
             "type": "cpu_usage_collector",
-            "cronSpec": "1s"
+            "cronSpec": "@every 1s"
         },
         {
             "name": "hostname_modifier",
             "type": "tag_modifier",
-            "cronSpec": "1s",
+            "cronSpec": "@every 1s",
             "add_tags": [
                 {"hostname": "localhost"}
             ]
@@ -16,7 +16,7 @@
         {
             "name": "file_output",
             "type": "file_writer",
-            "cronSpec": "1s",
+            "cronSpec": "@every 1s",
             "path": "cpu_usage.txt",
             "format": "json",
             "mode": "append"
