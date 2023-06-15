@@ -8,7 +8,6 @@
         {
             "name": "hostname_modifier",
             "type": "tag_modifier",
-            "cronSpec": "@every 1s",
             "add_tags": [
                 {"hostname": "localhost"}
             ]
