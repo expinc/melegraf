@@ -8,17 +8,21 @@
         {
             "name": "hostname_modifier",
             "type": "tag_modifier",
-            "add_tags": [
-                {"hostname": "localhost"}
-            ]
+            "params": {
+                "add_tags": [
+                    {"hostname": "localhost"}
+                ]
+            }
         },
         {
             "name": "file_output",
             "type": "file_writer",
             "cronSpec": "@every 1s",
-            "path": "cpu_usage.txt",
-            "format": "json",
-            "mode": "append"
+            "params": {
+                "path": "cpu_usage.txt",
+                "format": "json",
+                "mode": "append"
+            }
         }
     ],
     "conveyors": [

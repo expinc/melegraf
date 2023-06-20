@@ -14,13 +14,13 @@ func TestValidateProcessorConfig_Succeed(t *testing.T) {
 	}
 	`
 
-	var config ProcessorConfigBase
+	var config ProcessorConfig
 	err := json.Unmarshal([]byte(configStr), &config)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = config.ValidateBase()
+	err = config.Validate()
 	if err != nil {
 		t.Error(err)
 	}
@@ -35,13 +35,13 @@ func TestValidateProcessorConfig_Fail_SpaceName(t *testing.T) {
 	}
 	`
 
-	var config ProcessorConfigBase
+	var config ProcessorConfig
 	err := json.Unmarshal([]byte(configStr), &config)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = config.ValidateBase()
+	err = config.Validate()
 	if err == nil {
 		t.Errorf("Config with space name should be invalid")
 	}
@@ -56,13 +56,13 @@ func TestValidateProcessorConfig_Fail_SpaceType(t *testing.T) {
 	}
 	`
 
-	var config ProcessorConfigBase
+	var config ProcessorConfig
 	err := json.Unmarshal([]byte(configStr), &config)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = config.ValidateBase()
+	err = config.Validate()
 	if err == nil {
 		t.Errorf("Config with space type should be invalid")
 	}
@@ -77,13 +77,13 @@ func TestValidateProcessorConfig_Fail_InvalidCron(t *testing.T) {
 	}
 	`
 
-	var config ProcessorConfigBase
+	var config ProcessorConfig
 	err := json.Unmarshal([]byte(configStr), &config)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = config.ValidateBase()
+	err = config.Validate()
 	if err == nil {
 		t.Errorf("Config with invalid cron should be invalid")
 	}

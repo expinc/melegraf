@@ -12,6 +12,8 @@ type ConveyorConfig struct {
 	Output string `json:"output"`
 }
 
+var _ Config = (*ConveyorConfig)(nil)
+
 func (config *ConveyorConfig) Validate() error {
 	if strings.TrimSpace(config.Name) == "" {
 		return errors.New("name is required")
