@@ -114,6 +114,7 @@ func (proc *ProcessorBase) Stop() error {
 }
 
 func (proc *ProcessorBase) Send(mt metric.Metric) error {
+	sent := false
 	for _, output := range proc.outputs {
 		// Make a deep copy of the metric
 		// This is necessary because the metric may be modified by the following processorss
@@ -123,6 +124,12 @@ func (proc *ProcessorBase) Send(mt metric.Metric) error {
 		if err != nil {
 			return err
 		}
+
+		sent = true
+	}
+
+	if !sent {
+		return fmt.Errorf("no output conveyor found")
 	}
 
 	return nil
