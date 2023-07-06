@@ -27,7 +27,7 @@ type ProcessorBase struct {
 	cronChan  chan struct{}
 }
 
-// var _ Processor = (*ProcessorBase)(nil)
+var _ ProcessorCommonMixin = (*ProcessorBase)(nil)
 
 func (proc *ProcessorBase) Name() string {
 	return proc.config.Name
