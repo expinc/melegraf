@@ -4,8 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/expinc/melegraf/engine"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +14,11 @@ var serveCmd = &cobra.Command{
 	Short: "Start serving",
 	Long:  `Start collecting, processing, reporting metrics and listening to the configuration changes.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serve called")
+		eg := engine.NewEngine()
+		err := eg.Run()
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 
