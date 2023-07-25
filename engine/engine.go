@@ -1,13 +1,23 @@
 package engine
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/expinc/melegraf/config"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
+
+func init() {
+	logrus.SetFormatter(&logrus.JSONFormatter{
+		TimestampFormat: time.RFC3339Nano,
+	})
+}
 
 type Engine interface {
 	Run() error
@@ -22,11 +32,22 @@ func NewEngine() Engine {
 }
 
 func (eg *engine) loadConfigFromFile(file string) error {
-	// TODO
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+
+	eg.cfg = config.MelegrafConfig{}
+	err = json.Unmarshal(content, &eg.cfg)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (eg *engine) Run() error {
+	logrus.Info("Starting melegraf...")
 	var err error
 	end := false
 	sigchan := make(chan os.Signal, 1)
@@ -55,10 +76,10 @@ func (eg *engine) Run() error {
 
 		select {
 		case <-sigchan:
-			// TODO: log
+			logrus.Info("Got signal, exiting gracefully...")
 			end = true
 		case <-reloadChan:
-			// TODO: log
+			logrus.Info("Got reload signal, reloading...")
 			end = false
 		}
 
