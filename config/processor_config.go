@@ -1,20 +1,27 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 
 	"github.com/expinc/melegraf/globals"
 )
 
+type CustomConfigConstructor func() CustomConfig
+
+var (
+	type2Params = map[string]CustomConfigConstructor{}
+)
+
 type ProcessorConfig struct {
-	Name     string `json:"name"`
-	Type     string `json:"type"`
-	CronSpec string `json:"cronSpec"`
-	Params   Config `json:"params"`
+	Name     string       `json:"name"`
+	Type     string       `json:"type"`
+	CronSpec string       `json:"cronSpec"`
+	Params   CustomConfig `json:"params"`
 }
 
-var _ Config = (*ProcessorConfig)(nil)
+var _ CustomConfig = (*ProcessorConfig)(nil)
 
 func (config *ProcessorConfig) Validate() error {
 	if strings.TrimSpace(config.Name) == "" {
@@ -29,10 +36,40 @@ func (config *ProcessorConfig) Validate() error {
 		return err
 	}
 
-	if nil != config.Params {
+	if config.Params != nil {
 		if err := config.Params.Validate(); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (config *ProcessorConfig) UnmarshalJSON(data []byte) error {
+	aux := &struct {
+		Name     string          `json:"name"`
+		Type     string          `json:"type"`
+		CronSpec string          `json:"cronSpec"`
+		Params   json.RawMessage `json:"params"`
+	}{}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	config.Name = aux.Name
+	config.Type = aux.Type
+	config.CronSpec = aux.CronSpec
+
+	if aux.Params != nil {
+		paramConstructor, ok := type2Params[config.Type]
+		if !ok {
+			return errors.New("invalid processor type")
+		}
+		params := paramConstructor()
+		if err := json.Unmarshal(aux.Params, &params); err != nil {
+			return err
+		}
+		config.Params = params
 	}
 
 	return nil
