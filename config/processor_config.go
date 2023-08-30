@@ -14,6 +14,10 @@ var (
 	type2Params = map[string]CustomConfigConstructor{}
 )
 
+func RegisterCustomConfigConstructor(processorType string, constructor CustomConfigConstructor) {
+	type2Params[processorType] = constructor
+}
+
 type ProcessorConfig struct {
 	Name     string       `json:"name"`
 	Type     string       `json:"type"`

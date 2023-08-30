@@ -9,7 +9,7 @@ import (
 
 type Conveyor struct {
 	name                string
-	channel             chan *metric.Metric
+	channel             chan metric.Metric
 	closeOnce           sync.Once
 	InputProcessorName  string
 	OutputProcessorName string
@@ -18,7 +18,7 @@ type Conveyor struct {
 func NewConveyor(name string, size int) *Conveyor {
 	return &Conveyor{
 		name:    name,
-		channel: make(chan *metric.Metric, size),
+		channel: make(chan metric.Metric, size),
 	}
 }
 
@@ -26,7 +26,7 @@ func (conveyor *Conveyor) Name() string {
 	return conveyor.name
 }
 
-func (conveyor *Conveyor) Put(metric *metric.Metric) (err error) {
+func (conveyor *Conveyor) Put(metric metric.Metric) (err error) {
 	// recover panic and return error
 	defer func() {
 		if r := recover(); r != nil {
@@ -44,7 +44,7 @@ func (conveyor *Conveyor) Put(metric *metric.Metric) (err error) {
 	return
 }
 
-func (conveyor *Conveyor) GetChannel() <-chan *metric.Metric {
+func (conveyor *Conveyor) GetChannel() <-chan metric.Metric {
 	return conveyor.channel
 }
 

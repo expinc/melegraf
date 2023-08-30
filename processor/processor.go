@@ -1,25 +1,18 @@
 package processor
 
 import (
-	"github.com/expinc/melegraf/conveyor"
+	"fmt"
+
+	"github.com/expinc/melegraf/config"
 	"github.com/expinc/melegraf/metric"
 )
 
-// ProcessorCommonMixin is a common interface for all processors
-type ProcessorCommonMixin interface {
-	Name() string
-	AddInput(input *conveyor.Conveyor) error
-	RemoveInput(name string) error
-	AddOutput(output *conveyor.Conveyor) error
-	RemoveOutput(name string) error
-	Start() error
-	IsStarted() bool
-	Stop() error
-	Send(mt metric.Metric) error
-}
+// Processor contains all methods that must be implemented by concrete processors
+type Processor interface {
+	// Config returns the configuration of the processor
+	// The returned value must not be modified
+	Config() *config.ProcessorConfig
 
-// ConcreteProcessor is an interface for concrete processors
-type ConcreteProcessor interface {
 	// Setup is called once when the processor is started
 	// It is typically used to establish connections to external systems
 	// or to open necessary files
@@ -31,14 +24,37 @@ type ConcreteProcessor interface {
 	Close() error
 
 	// OnReceive is called when a metric is received from an input conveyor
-	OnReceive() error
+	// It returns a slice of metrics that should be sent to output conveyors
+	OnReceive(mt metric.Metric) (out []metric.Metric, err error)
 
 	// OnCronTrigger is called when a cron trigger is fired
-	OnCronTrigger() error
+	// It returns a slice of metrics that should be sent to output conveyors
+	OnCronTrigger() (out []metric.Metric, err error)
 }
 
-// Processor is an interface for all processors
-type Processor interface {
-	ProcessorCommonMixin
-	ConcreteProcessor
+// ProcessorConstructor is a function that creates a new processor
+type ProcessorConstructor func(cfg *config.ProcessorConfig) (Processor, error)
+
+var (
+	procType2Constructor = map[string]ProcessorConstructor{}
+)
+
+// RegisterProcessorConstructor registers a processor constructor of a given type
+func RegisterProcessorConstructor(procType string, constructor ProcessorConstructor) {
+	procType2Constructor[procType] = constructor
+}
+
+// NewProcessor creates a new processor
+func NewProcessor(procType string, cfg *config.ProcessorConfig) (Processor, error) {
+	constructor, ok := procType2Constructor[procType]
+	if !ok {
+		return nil, fmt.Errorf("invalid processor type: %s", procType)
+	}
+
+	proc, err := constructor(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return proc, nil
 }

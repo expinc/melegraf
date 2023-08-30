@@ -10,19 +10,19 @@ func TestConveyor(t *testing.T) {
 	conveyor := NewConveyor("test", 3)
 
 	// Test Put
-	err := conveyor.Put(&metric.Metric{Name: "metric1"})
+	err := conveyor.Put(metric.Metric{Name: "metric1"})
 	if nil != err {
 		t.Fatal(err)
 	}
-	err = conveyor.Put(&metric.Metric{Name: "metric2"})
+	err = conveyor.Put(metric.Metric{Name: "metric2"})
 	if nil != err {
 		t.Fatal(err)
 	}
-	err = conveyor.Put(&metric.Metric{Name: "metric3"})
+	err = conveyor.Put(metric.Metric{Name: "metric3"})
 	if nil != err {
 		t.Fatal(err)
 	}
-	err = conveyor.Put(&metric.Metric{Name: "metric4"})
+	err = conveyor.Put(metric.Metric{Name: "metric4"})
 	if nil == err {
 		t.Fatal("metric4 should fail to put in the full conveyor")
 	}
@@ -46,7 +46,7 @@ func TestConveyor(t *testing.T) {
 	conveyor.Dispose()
 
 	// Test Put after Dispose
-	err = conveyor.Put(&metric.Metric{Name: "metric5"})
+	err = conveyor.Put(metric.Metric{Name: "metric5"})
 	if nil == err {
 		t.Fatal("metric5 should fail to put in the disposed conveyor")
 	}
