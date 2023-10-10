@@ -2,13 +2,17 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/expinc/melegraf/config"
+	"github.com/expinc/melegraf/conveyor"
+	"github.com/expinc/melegraf/processor"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -24,7 +28,9 @@ type Engine interface {
 }
 
 type engine struct {
-	cfg config.MelegrafConfig
+	cfg       config.MelegrafConfig
+	procs     map[string]processor.ProcessorRunner
+	conveyors map[string]conveyor.Conveyor
 }
 
 func NewEngine() Engine {
@@ -92,7 +98,48 @@ func (eg *engine) Run() error {
 }
 
 func (eg *engine) cleanup() error {
-	// TODO
+	// Stop all processors
+	if eg.procs != nil {
+		for _, proc := range eg.procs {
+			err := proc.Stop()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Remove all conveyors
+	if eg.conveyors != nil {
+		for _, conv := range eg.conveyors {
+			if eg.procs != nil {
+				if strings.TrimSpace(conv.InputProcessorName) != "" {
+					proc, ok := eg.procs[conv.InputProcessorName]
+					if ok {
+						proc.RemoveInput(conv.Name())
+					} else {
+						return fmt.Errorf("processor %s not found", conv.InputProcessorName)
+					}
+				}
+
+				if strings.TrimSpace(conv.OutputProcessorName) != "" {
+					proc, ok := eg.procs[conv.OutputProcessorName]
+					if ok {
+						proc.RemoveOutput(conv.Name())
+					} else {
+						return fmt.Errorf("processor %s not found", conv.OutputProcessorName)
+					}
+				}
+			}
+
+			conv.Dispose()
+		}
+
+		eg.conveyors = nil
+	}
+
+	// Remove all processors
+	eg.procs = nil
+
 	return nil
 }
 
