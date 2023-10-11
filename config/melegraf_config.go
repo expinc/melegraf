@@ -1,8 +1,8 @@
 package config
 
 type MelegrafConfig struct {
-	Processors []ProcessorConfig `json:"processors"`
-	Conveyors  []ConveyorConfig  `json:"conveyors"`
+	Processors []*ProcessorConfig `json:"processors"`
+	Conveyors  []*ConveyorConfig  `json:"conveyors"`
 }
 
 var _ Config = (*MelegrafConfig)(nil)

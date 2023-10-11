@@ -30,7 +30,7 @@ type Engine interface {
 type engine struct {
 	cfg       config.MelegrafConfig
 	procs     map[string]processor.ProcessorRunner
-	conveyors map[string]conveyor.Conveyor
+	conveyors map[string]*conveyor.Conveyor
 }
 
 func NewEngine() Engine {
@@ -155,12 +155,45 @@ func (eg *engine) cleanup() error {
 }
 
 func (eg *engine) bootstrap() error {
+	logrus.Info("Bootstrapping...")
+
 	// Create all processors
+	eg.procs = make(map[string]processor.ProcessorRunner)
+	for _, procCfg := range eg.cfg.Processors {
+		proc, err := processor.NewProcessorRunner(procCfg.Type, procCfg)
+		if err != nil {
+			return err
+		}
+
+		eg.procs[procCfg.Name] = proc
+	}
 
 	// Create all conveyors
+	eg.conveyors = make(map[string]*conveyor.Conveyor)
+	for _, convCfg := range eg.cfg.Conveyors {
+		conv := conveyor.NewConveyor(convCfg.Name, int(convCfg.Size))
+		eg.conveyors[convCfg.Name] = conv
+
+		inputProc, ok := eg.procs[convCfg.Input]
+		if !ok {
+			return fmt.Errorf("processor \"%s\" not found", convCfg.Input)
+		}
+		inputProc.AddOutput(conv)
+
+		outputProc, ok := eg.procs[convCfg.Output]
+		if !ok {
+			return fmt.Errorf("processor \"%s\" not found", convCfg.Output)
+		}
+		outputProc.AddInput(conv)
+	}
 
 	// Start all processors
+	for _, proc := range eg.procs {
+		err := proc.Start()
+		if err != nil {
+			return err
+		}
+	}
 
-	// TODO
 	return nil
 }
