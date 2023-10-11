@@ -60,11 +60,6 @@ func (eg *engine) Run() error {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 	reloadChan := make(chan struct{}, 1)
 	for {
-		err = eg.cleanup()
-		if err != nil {
-			break
-		}
-
 		err = eg.loadConfigFromFile(viper.ConfigFileUsed())
 		if err != nil {
 			break
@@ -77,6 +72,7 @@ func (eg *engine) Run() error {
 
 		err = eg.bootstrap()
 		if err != nil {
+			eg.cleanup()
 			break
 		}
 
@@ -89,6 +85,11 @@ func (eg *engine) Run() error {
 			end = false
 		}
 
+		err = eg.cleanup()
+		if err != nil {
+			break
+		}
+
 		if end {
 			break
 		}
@@ -98,12 +99,16 @@ func (eg *engine) Run() error {
 }
 
 func (eg *engine) cleanup() error {
+	logrus.Info("Cleaning up...")
+	failed := false
+
 	// Stop all processors
 	if eg.procs != nil {
 		for _, proc := range eg.procs {
 			err := proc.Stop()
 			if err != nil {
-				return err
+				logrus.Errorf("Error stopping processor %s: %s", proc.Name(), err)
+				failed = true
 			}
 		}
 	}
@@ -117,7 +122,8 @@ func (eg *engine) cleanup() error {
 					if ok {
 						proc.RemoveInput(conv.Name())
 					} else {
-						return fmt.Errorf("processor %s not found", conv.InputProcessorName)
+						logrus.Errorf("processor %s not found", conv.InputProcessorName)
+						failed = true
 					}
 				}
 
@@ -126,7 +132,8 @@ func (eg *engine) cleanup() error {
 					if ok {
 						proc.RemoveOutput(conv.Name())
 					} else {
-						return fmt.Errorf("processor %s not found", conv.OutputProcessorName)
+						logrus.Errorf("processor %s not found", conv.OutputProcessorName)
+						failed = true
 					}
 				}
 			}
@@ -140,10 +147,20 @@ func (eg *engine) cleanup() error {
 	// Remove all processors
 	eg.procs = nil
 
+	if failed {
+		return fmt.Errorf("cleanup failed")
+	}
+
 	return nil
 }
 
 func (eg *engine) bootstrap() error {
+	// Create all processors
+
+	// Create all conveyors
+
+	// Start all processors
+
 	// TODO
 	return nil
 }
